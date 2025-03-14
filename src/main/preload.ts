@@ -21,7 +21,15 @@ const electronHandler = {
     once(channel: Channels, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
+    loginGmail: (email: string, password: string) =>
+      ipcRenderer.invoke('login-gmail', email, password),
+    sendEmail: (emailDetails: any) =>
+      ipcRenderer.invoke('send-email', emailDetails),
   },
+  loginGmail: (email: string, password: string) =>
+    ipcRenderer.invoke('login-gmail', email, password),
+  sendEmail: (emailDetails: any) =>
+    ipcRenderer.invoke('send-email', emailDetails),
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

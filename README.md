@@ -2,7 +2,10 @@
 
 A modern **Electron + React + TypeScript** boilerplate featuring **Ant Design UI**, **EJS templating**, and **Gmail sending functionality using Nodemailer**.  
 
-![Electron React App](https://source.unsplash.com/1200x500/?technology,coding)
+![LOGO](image-2.png)
+
+
+![UI](image.png)
 
 ---
 
@@ -76,8 +79,7 @@ const transporter = nodemailer.createTransport({
 ---
 
 ## 🎨 **UI Preview**  
-![App UI](https://source.unsplash.com/800x400/?email,technology)
-
+![App UI](image-1.png)
 ---
 
 ## ⚡ Usage  
@@ -104,6 +106,6 @@ const transporter = nodemailer.createTransport({
 ## 📜 License  
 This project is open-source under the **MIT License**.  
 
-🔗 **Follow for Updates** → [GitHub](https://github.com/your-repo)  
+🔗 **Follow for Updates** → [GitHub](https://github.com/quangvu10012001/my-send-gmail)  
 
 🚀 Happy Coding! 🎉  

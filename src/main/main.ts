@@ -1,20 +1,13 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import nodemailer from 'nodemailer';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
+let userEmail = '';
+let userPassword = '';
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -31,7 +24,47 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'));
 });
 
+// Handle Gmail login
+ipcMain.handle('login-gmail', async (_event, email, password) => {
+  userEmail = email;
+  userPassword = password;
+  return true; // Authentication successful
+});
+
+// Handle email sending
+ipcMain.handle('send-email', async (_event, emailDetails) => {
+  if (!userEmail || !userPassword) {
+    return { success: false, error: 'User not logged in' };
+  }
+  console.log('Sending email from:', userEmail); // Debug log
+  console.log('To:', emailDetails.to); // Debug log
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: userEmail,
+      pass: userPassword,
+    },
+  });
+
+  const mailOptions = {
+    from: userEmail,
+    to: emailDetails.to,
+    subject: emailDetails.subject,
+    text: emailDetails.body,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent:', info.response); // Debug log
+    return { success: true };
+  } catch (error) {
+    console.error('Email sending error:', error); // Debug log
+    return { success: false, error };
+  }
+});
+
 if (process.env.NODE_ENV === 'production') {
+  // eslint-disable-next-line global-require
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
 }
@@ -40,10 +73,12 @@ const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
+  // eslint-disable-next-line global-require
   require('electron-debug')();
 }
 
 const installExtensions = async () => {
+  // eslint-disable-next-line global-require
   const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
   const extensions = ['REACT_DEVELOPER_TOOLS'];
@@ -71,10 +106,12 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1280,
+    height: 1080,
     icon: getAssetPath('icon.png'),
     webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
